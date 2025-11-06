@@ -27,4 +27,12 @@ with DAG(dag_id = 'weather_etl_pipeline',
 
     @task()
     def extract_weather_data():
-        # extracting weather data from open meteo API using airflow connectio
+        # extracting weather data from open meteo API using airflow connection
+
+        # using HTTP Hook to get details from airflow
+        http_hook = HttpHook(http_conn_id= API_CONN_ID, method = 'GET')
+
+        # building api endpoint
+        # https://api.open-meteo.com/v1/forecast?latitude=17.384&longitude=78.456&current_weather=true
+        endpoint = f'/v1/forecast?latitude={LATITUDE}&longitude={LONGITUDE}&current_weather=true'
+
