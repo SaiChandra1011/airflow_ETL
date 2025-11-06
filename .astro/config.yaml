@@ -1,2 +1,5 @@
 project:
     name: airflow-etl
+
+port:
+  postgres: 5433

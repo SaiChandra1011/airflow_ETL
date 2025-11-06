@@ -3,7 +3,8 @@ from airflow.providers.http.hooks.http import HttpHook
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.sdk.definitions.decorators import task
 from pendulum import today
-
+import requests
+import json
 
 # coordinates of hyderabad
 LATITUDE = '17.384'
@@ -36,12 +37,12 @@ with DAG(dag_id = 'weather_etl_pipeline',
         # https://api.open-meteo.com/v1/forecast?latitude=17.384&longitude=78.456&current_weather=true
         endpoint = f'/v1/forecast?latitude={LATITUDE}&longitude={LONGITUDE}&current_weather=true'
 
-        response = http_hook(endpoint)
+        response = http_hook.run(endpoint)
 
         if response.status_code == 200:
             return response.json()
         else:
-            raise Exception(f"Failed to fetch weather daya: {response.status_code}")
+            raise Exception(f"Failed to fetch weather data: {response.status_code}")
         
 
 
@@ -74,7 +75,7 @@ with DAG(dag_id = 'weather_etl_pipeline',
         CREATE TABLE IF NOT EXISTS weather_data (
                        latitude FLOAT,
                        longitude FLOAT,
-                       temperature FLLAT,
+                       temperature FLOAT,
                        windspeed FLOAT,
                        winddirection FLOAT,
                        weathercode INT,
@@ -84,7 +85,7 @@ with DAG(dag_id = 'weather_etl_pipeline',
         
         cursor.execute("""
                        INSERT INTO weather_data (latitude, longitude, temperature, windspeed, winddirection, weathercode)
-                       VALUES (%s, %s, %s, %s, %s)
+                       VALUES (%s, %s, %s, %s, %s, %s)
                        """, (
                             transformed_data['latitude'],
                             transformed_data['longitude'],
